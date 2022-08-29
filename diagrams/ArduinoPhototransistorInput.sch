@@ -1,0 +1,23 @@
+v 20091004 2
+C 40000 40000 0 0 0 title-B.sym
+C 43000 49200 1 270 0 photo-transistor-1.sym
+{
+T 43500 49400 5 6 0 1 270 0 1
+device=PS2501-1
+T 43100 48940 5 10 0 1 270 0 1
+refdes=Q?
+T 43000 49240 5 10 0 1 270 0 1
+device=photo-transistor
+}
+C 42100 48900 1 0 0 resistor-1.sym
+{
+T 42400 49300 5 10 0 0 0 0 1
+device=RESISTOR
+T 42300 48700 5 10 1 1 0 0 1
+refdes=470k
+}
+C 41900 49000 1 0 0 5V-plus-1.sym
+C 43300 48700 1 0 0 gnd-1.sym
+N 43000 49000 43000 48500 4
+T 42500 48300 9 10 1 0 0 0 1
+Arduino Input Pin

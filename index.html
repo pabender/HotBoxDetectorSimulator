@@ -1,0 +1,116 @@
+<head>
+<title>An Ardunio Based Defect Detector Simulator</title>
+</head>
+
+<h1>An Ardunio Based Defect Detector Simulator</h1>
+
+<h2>Introduction</h2>
+<p>Defect detectors are one of the technologies that allowed the prototype railroads to virtually eliminate the use of cabooses on trains.  The purpose of a defect detector is to stand gaurd along the right of way and monitor passing trains for defects.  Defect detectors may watch for one or more of the following conditions (this may not be an exhaustive list):</p>
+<ul>
+<li>Hotboxes, which is a description for a hot wheel bearings </li>
+<li>Dragging Equipment, which is an indication of a possible derailment</li>
+<li>High/Wide Equipment, which is equipment that will not clear an obstruction</li>
+</ul>
+<p>
+Most modern defect detectors are of the talking type. This means they broadcast a message over radio indicating whether or not there is a defect detected.</p>
+<p>This page describes a simulator of a defect detector which can be used on a model railroad.  The defect detector we are modeling will broadcast messages to a speaker, or, optionally, to an FRS style radio operating in voice activated mode</p>
+
+<a name=hardware>
+<h2>The Arduino</h2>
+<p>The Arduino is an open source microcontroller platform which is very handy for prototyping systems.  The Arduino platform includes a nice integrated development environment which can be used to build applications and upload those applications to an Arduino development board.  More information on arduino can be found at <a href="http://www.ardunio.cc">http://www.arduino.cc</a>.
+</p>
+<h2>The VoiceBox</h2>
+<p>This project makes use of speach synthesizer chip called a <a href="http://www.magnevation.com/SpeakJet.swf">SpeakJet</a>.</p>
+<p>For use with our Arduino hardware, we utilize the SparkFun Electronics <a href=http://www.sparkfun.com/commerce/product_info.php?products_id=9799">Voicebox Shield</a>.  In the Arduino world, a shield is a pluggable board that can be connected to the arduino itself using a set of headers.  By utilizing the VoiceBox Shield, we can build the project without having to think about the circuit which generates the voice.  All we need to do is solder a few headers in place.</p>
+<h2>Detection</h2>
+<p> We only want our detector to trigger when a train is present.  To make this happen we need to have some form of detection available to us.<p>  
+
+<h3>Version 1 - Active High inputs</h3>
+In my initial development, I used a simple optical detector constructed with a phototransistor, as shown in the diagram below.</p>
+<img src="diagrams/ArduinoPhototransistorInput-ActiveHigh.png" alt="Arduino Phototransistor Input - Active High">
+
+<h3>Version 2 - Active Low inputs</h3>
+
+<p>Ultimatly, My intention is to use the circuit with current sensing detectors.  These may also be augmented with current optical detectors.  The current sensing detectors I have available to me (Mostly <a href="http://www.ncedcc.com/component/virtuemart/?page=shop.product_details&flypage=garden_flypage.tpl&product_id=63&category_id=16">NCE BD20</a>s) are all active low devices.  This means they connect the input on the Arduino to a ground, instead of connecting the Arduino input to +5vdc.  In order to utilize these, we need to slightly adjust our phototransisotr arangement.  The same components are used, they are just connected in a different order, as shown below </p>
+<img src="diagrams/ArduinoPhototransistorInput-ActiveLow.png" alt="Arduino Phototransistor Input - Active Low">
+<a name=software>
+
+<h2>The Completed Defect Detector</h2>
+<p>The completed detector is shown below.</p>
+<p><img src="images/IMGP5214.JPG" alt="The completed Arduino based hotbox detector"></p>
+<p>The breadboard on the right hand side of the image holds the two phototransistors and a 3.5mm audio jack.  The cable leading off the right edge goes to a pair of headphones I am using for testing.</p>
+<p>Except for the phototransistor, the optical detector circuit is connstructed on the voicebox shield itself.</p>
+<h2>Hardware Construction</h2>
+<h3>Populating the VoiceBox Shield</h3>
+<p> We start with a VoiceBox shield as it arrives from Sparkfun:</p>
+<p><img src="images/IMGP5264.JPG" alt="The VoiceBox shield, as it arrives from Sparkfun Electronics"></p>
+<p>and a set of connectors:</p>
+<p><img src="images/IMGP5268.JPG" alt="Connectors used on the VoiceBox shield"></p>
+The top row of connectors are a Arduino Stackable headers.  You may substitute 0.1 inch spacing breakaway headers for these if you do not want to use the headers for off board connections.  The single connector on the bottom row is a 0.1 inch spacing 2 pin right angle header for the speaker.  You may substitute wires directly to the speaker if you prefer.</p>
+<p>The first step is to solder the speaker connections to the voicebox shield</p>
+<p><img src="images/IMGP5271.JPG" alt="Speaker connection attached"></p>
+<p>Next, we solder the headers on to the shield.  When doing this, I recommend starting by only soldering one pin on each end of the header.  Having only one pin soldered allows you to test fit the mounting on the Arduino, and adjust the alignment of the headers as necessary.  Once you are satisfied with the alignment, solder the rest of the pins of each of the 4 headers.</p>
+<p><img src="images/IMGP5273.JPG" alt="headers connected (bottom of shield)"></p>
+<p><img src="images/IMGP5274.JPG" alt="headers connected (side of shield)"></p>
+<p>Once the headers are soldered, you can connect a speaker, program your Arduino. and test your build.  I have provided images of two possible speaker arangements below<p>
+<p><img src="images/IMGP5275.JPG" alt="Speaker attached, ready for testing"></p>
+<p><img src="images/IMGP5276.JPG" alt="Installed in a Sparkfun Arduino project box.  The connector on the side is a 3.5mm mono headphone jack, for output to an FRS radio."></p>
+<p>Testing at this point should result in the hotbox detector randomly going through the opening and closing message sequences.  This behavior will change when we connect inputs to the detector<p>
+<h3>Inputs</h3>
+<h4>Current Detection</h4>
+<p>I am utilizing an <a href="http://www.ncedcc.com/component/virtuemart/?page=shop.product_details&flypage=garden_flypage.tpl&product_id=63&category_id=16">NCE BD20</a> for current detection.  The BD20 needs three wires connected to it to work with our circuit.  I have connected a red wire to the +5VDC terminal, a black wire to the Ground terminal, and a green wire to the logical output terminal.</p>
+<p><img src="images/IMGP5284.JPG" alt="An NCE BD20.  The red wire connects to +5VDC on the Arduino.  The black wire is connected to a ground connection on the Arduino, and the green wire is connected to one of pins 6 or 7."></p>
+<p>Connect the red wire to the Arduino +5VDC terminal, connect the black wire to ground, and connect the green wire to either pin 6 or pin 7.  To enable speed reports, connect the other pin to the second detector.</p>
+<p><img src="images/IMGP5286.JPG" alt="All of the wires from the NCE BD20s connected to the Arduino. The red wires connect to +5VDC on the Arduino.  The black wires are connected to a ground connection on the Arduino, and the green wires are connected to pins 6 and 7."></p>
+<p><img src="images/IMGP5288.JPG" alt="All of the wires from the NCE BD20s connected to the Arduino The red wires connect to +5VDC on the Arduino.  The black wires are connected to a ground connection on the Arduino, and the green wires are connected to pins 6 and 7."></p>
+<h4>Optical Detection</h4>
+<p>The diagrams for two optical detection circuits have been outlined above.  The components required for both are shown below.  NOTE: the components shown are for two optical detectors, except there is one missing resistor (I ran out of 470K Ohm resistors for the photo).
+<p><img src="images/IMGP5289.JPG" alt="Optical Detector Components"></p>
+<p>Start by soldering the 4 pin header into position.  I recommend soldering it near the digital input pins.</p>
+<p> choose one of the pins in each pair to solder the resistor next too.  When completed, the top of the board should look something like this
+<p><img src="images/IMGP5293.JPG" alt="Components soldered to Voicebox Shield.  (Top)."></p>
+<p>On the connector side of the resistors, create a solder bridge between the solder pads for the connector and the ones for the resistor.<p>
+<p>Connect these combined pads to the inputs (pin 6 for one and pin 7 for the other).<p>
+<p>Connect the oposite end of the resistors to ground.<p>
+<p>Connect the two remaining pins on the connector to +5VDC<p>
+<p>When finished, the board should look something like the following<p> 
+<p><img src="images/IMGP5294.JPG" alt="Components soldered to Voicebox Shield (bottom)"></p>
+<p>NOTE: To switch from active high to active low, reverse the ground and +5VDC connections.  The board above was originally wired this way, but has since had the black and red wires switched at the arduino pins (so black is +5VDC and red is ground in the photo above).</p>
+<p>The only remaining task is to connect the phototransistors to the input circuit.  Remember these are polorized components, so if they don't work in the first time, try reversing the two leads that go to the device.</p>
+<h4>Dissabling Speed Reports</h5>
+<p>If you do not need speed reports, connect pin 7 or 6 (whichever one does not have the a detector connected to it) to the arduino 3.3V terminal.  This last connection will force the arduino to see the input as high.  (NOTE:If you are using active high detectors, this pin should be grounded instead).</p>
+<p><img src="images/IMGP5296.JPG" alt="Single input bypass wire installed."></p>
+<h2>Software (Version 1)</h2>
+<p>The Version 1 Software I have written represents a modern defect detector.  It has the following behavior</p>
+<ul>
+<li>When a train is detected (using Arduino I/O pin 6 or 7), the defect detector reports "Hotbox Detector Milepost 36.2" as a greeting</li>
+<li>After the greeting, the detector simulator <em>MAY</em> sound an alarm and report "Defects Detected".  This occurs randomly.</li>
+<li>If a defect was not detected, the detector reports:
+<ul>
+<li>"Hotbox Detector Milepost 36.2, No Defects, Detector Out" if only one of the two input sensor was triggered.</li>
+<li>"Hotbox Detector Milepost 36.2, Speed 11, No Defects, Detector Out" if both inputs were triggered in the correct order
+</ul>
+</li>
+</ul>
+<p>The milepost number can be changed with a variable in a header file.</p>
+<p>If the speed is reported, it is calculated using the difference in trigger times between the first and second inputs.  The speed calculation assumes the input sensors are spaced 80 scale feet apart.</p>
+<p>A software download for active high sensor inputs is available <a href="HotBoxDetector.zip">here</a></p>
+<p>A software download for active low sensor inputs is available <a href="HotBoxDetector_ActiveLow.zip">here</a></p>
+<a name=exampleoutput>
+<h2>Example Output</h2>
+<ul>
+<li>No Defects <a href="recordings/Hotbox-NoDefects.mp3">mp3</a> <a href="recordings/Hotbox-NoDefects.wav">wav</a></li>
+<li>No Defects with Speed <a href="recordings/Hotbox-NoDefectsWithSpeed.mp3">mp3</a> <a href="recordings/Hotbox-NoDefectsWithSpeed.wav">wav</a></li>
+<li>Defect Detected<a href="recordings/Hotbox-DefectDetected.mp3">mp3</a> <a href="recordings/Hotbox-DefectDetected.wav">wav</a></li>
+</ul>
+
+<p>I have also posted a youtube video showing the device in operation on a test track:</p>
+<object width="425" height="344"><param name="movie" value="http://www.youtube.com/v/n8cO1lIXSyI?hl=en&fs=1"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/n8cO1lIXSyI?hl=en&fs=1" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="425" height="344"></embed></object>
+
+
+<HR>
+This page has been created and maintained with pico and vi.
+
+Please address corrections and comments to
+<a href=mailto:paul.bender@acm.org>paul.bender@acm.org</a>
+
