@@ -30,6 +30,7 @@ We only want our detector to trigger when a train is present.  To make this happ
 ### Version 1 - Active High inputs
 
 In my initial development, I used a simple optical detector constructed with a phototransistor, as shown in the diagram below.
+
 ![Arduino Phototransistor Input - Active High](diagrams/ArduinoPhototransistorInput-ActiveHigh.png)
 
 ### Version 2 - Active Low inputs
@@ -54,7 +55,7 @@ Except for the phototransistor, the optical detector circuit is connstructed on 
 
  We start with a VoiceBox shield as it arrives from Sparkfun:
 
-![The VoiceBox shield, as it arrives from Sparkfun Electronics](images/IMGP5264.JPG))
+![The VoiceBox shield, as it arrives from Sparkfun Electronics](images/IMGP5264.JPG)
 
 and a set of connectors:
 
@@ -141,7 +142,7 @@ A software download for active low sensor inputs is available [here](HotBoxDetec
 
 -No Defects [mp3](recordings/Hotbox-NoDefects.mp3) [wav](recordings/Hotbox-NoDefects.wav)
 -No Defects with Speed [mp3](recordings/Hotbox-NoDefectsWithSpeed.mp3) [wav]("recordings/Hotbox-NoDefectsWithSpeed.wav)
--Defect Detected [mpe](recordings/Hotbox-DefectDetected.mp3) [wav](recordings/Hotbox-DefectDetected.wav)
+-Defect Detected [mp3](recordings/Hotbox-DefectDetected.mp3) [wav](recordings/Hotbox-DefectDetected.wav)
 
 
 I have also posted a youtube video showing the device in operation on a test track:
