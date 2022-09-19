@@ -10,6 +10,11 @@ int DEFECTPERCENT=10;
 
 //Define the Pin Numbers used in the sketch.
 
+// Active and inactive are aliases to high and low
+
+#define DETECTORACTIVE LOW
+#define DETECTORINACTIVE HIGH
+
 // Ready
 #define RDY  13
 
@@ -25,3 +30,19 @@ int DEFECTPERCENT=10;
 // Sensor Inputs for defect detector.
 #define TRIGGER1PIN 6
 #define TRIGGER2PIN 7
+
+typedef struct __detector {
+  char milepost[10];
+  char track[10];
+  int distance;
+  int triggerPin1;
+  int triggerPin2;
+  float speed;
+  int speedtrigger;
+  int firstTime;
+  int defect;
+} detector;
+
+void initDetector(detector *d,int pin1,int pin2);
+int detectorActive(detector *d);
+void resetDetectorState(detector d);

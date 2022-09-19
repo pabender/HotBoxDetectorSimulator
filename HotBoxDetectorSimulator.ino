@@ -19,6 +19,7 @@ the SPK+ and - pins on the shield.
 // Soft serial library used to send commands 
 // on pin 2 instead of regular serial pin.
 #include <SoftwareSerial.h>
+#include "Audio.h"
 #include "Detector.h"
 #include "Messages.h"
 #include "Numbers.h"
@@ -26,6 +27,8 @@ the SPK+ and - pins on the shield.
 //Create a SoftSerial Objet
 SoftwareSerial speakjet = SoftwareSerial(0, txPin);
 
+detector track1Detector;
+  
 void setup()  
 {
   //Configure the pins for the SpeakJet module
@@ -40,68 +43,35 @@ void setup()
   
   //Configure Reset line as an output
   pinMode(RES, OUTPUT);
-       
-  pinMode(TRIGGER1PIN,INPUT);
-  pinMode(TRIGGER2PIN,INPUT);
 
-  //Reset the SpeakJet module
-  digitalWrite(RES, LOW);
-  delay(100);
-  digitalWrite(RES, HIGH);
-  
+  initDetector(&track1Detector,TRIGGER1PIN,TRIGGER2PIN);     
+  speakJetReset();
 }
 
-void loop()
-{ 
-  int speedtrigger=TRIGGER2PIN;
-  int first=0,last=0;
-  unsigned int defect=0;
-  float speed=0;
-  
-  while(digitalRead(TRIGGER1PIN)==HIGH
-        && digitalRead(TRIGGER2PIN)==HIGH); // while both triggers are low, wait
-  if(digitalRead(TRIGGER1PIN)==LOW){
-     speedtrigger=TRIGGER2PIN;
-     first=millis();
-     randomSeed(first);
-     defect=random(100);
-     speed = 0;
-     last=0;
-  } else  {
-     speedtrigger=TRIGGER1PIN;
-     first=millis();
-     randomSeed(first);
-     defect=random(100);
-     speed = 0;
-     last=0;
-  }
-  
+void loop() { 
 
-  //Send "Hotbox detector, milepost" to the SpeakJet module
-  speakjet.print(welcome);
+  while(!detectorActive(track1Detector)); // while both triggers are inactive, wait
+
+  resetDetectorState(&track1Detector);
+   
+  readWelcome();
+ 
+
   //Wait before sending the next string.
   while(digitalRead(SPK)!=LOW){
-    if(digitalRead(speedtrigger)==LOW && speed==0){
-            last = millis();
-            if(first==last) 
-              speed = 0;
-            else
-              speed = (DISTANCE/5280.0)/((last-first)/3600000.0);
+    if(digitalRead(track1Detector.speedtrigger)== DETECTORACTIVE && track1Detector.speed==0){
+            track1Detector.speed = calcSpeed(track1Detector.firstTime,millis());
     }
   }
-  milepost();
+  
+  readMilepost(track1Detector.milepost);
   
   // Now wait until the detector input changes
-  while(digitalRead(TRIGGER1PIN)==LOW 
-        || digitalRead(TRIGGER2PIN)==LOW){
-          if(digitalRead(speedtrigger)==LOW && speed==0){
-            last = millis();
-            if(first==last) 
-              speed = 0;
-            else
-              speed = (DISTANCE/5280.0)/((last-first)/3600000.0);
+  while(detectorActive(track1Detector)){
+          if(digitalRead(track1Detector.speedtrigger)==DETECTORACTIVE && track1Detector.speed==0){
+            track1Detector.speed=calcSpeed(track1Detector.firstTime,millis());
           }
-          if(defect<=DEFECTPERCENT) {
+          if(track1Detector.defect<=DEFECTPERCENT) {
              // we have already determined if we have a deffect, now 
              // we need to decide if this is where we want to trigger
              // the alarm.
@@ -110,46 +80,69 @@ void loop()
           
         } // while either trigger is HIGH, wait
         
-  if(defect<=(DEFECTPERCENT)){
+  if(track1Detector.defect<=(DEFECTPERCENT)){
     defect_alarm();
     // after triggering the defect alarm, wait until the
     // trigger pins are both low again before continuing.
-    while(digitalRead(TRIGGER1PIN)==LOW 
-        || digitalRead(TRIGGER2PIN)==LOW);
+    while(detectorActive(track1Detector));
   } else {
     //Send "Hotbox detector, milepost" to the SpeakJet module
-    speakjet.print(welcome);
-    //Wait before sending the next string.
-    while(digitalRead(SPK)!=LOW);
-    milepost();
-    //Wait before sending the next string.
-    while(digitalRead(SPK)!=LOW);
-    if(speed!=0){
-      readspeed(speed);
+    readWelcome();
+    readMilepost(track1Detector.milepost);
+  
+    if(track1Detector.speed!=0){
+      readspeed(track1Detector.speed);
     }
-    while(digitalRead(SPK)!=LOW);
-    speakjet.print(no_defects);
 
-    while(digitalRead(SPK)!=LOW);
-    speakjet.print(detector_out);
+    readNoDefects();
+    readDetectorOut();
   }
 }
 
+/* Speak Jet routines */
+void speakJetReset(){
+  //Reset the SpeakJet module
+  digitalWrite(RES, LOW);
+  delay(100);
+  digitalWrite(RES, HIGH);
+}
+
+void speakJetWait(){
+    while(digitalRead(SPK)!=LOW);  
+}
+
+//Send "Hotbox detector, milepost" to the SpeakJet module
+void readWelcome(){  
+  speakJetWait();
+  speakjet.print(welcome);
+}
 
 // read the mile post number, one digit at a time.
-void milepost()
+void readMilepost(char milepost[])
 {
+  speakJetWait();
   int i;
-  for(i=0;i<strlen(MILEPOST);i++){
-     while(digitalRead(SPK)!=LOW);
-     speakdigit(MILEPOST[i]);    
+  for(i=0;i<strlen(milepost);i++){
+     speakdigit(milepost[i]);    
   }
 }
+
+void readNoDefects(){
+    speakJetWait();
+    speakjet.print(no_defects);
+}
+
+void readDetectorOut(){
+    speakJetWait();
+    speakjet.print(detector_out);
+}
+
+
 
 // read a single digit
 void speakdigit(char digit)
 {
-  while(digitalRead(SPK)!=LOW);
+  speakJetWait();
   switch(digit)
   {
     case '1':
@@ -189,9 +182,18 @@ void speakdigit(char digit)
   
 }
 
+//Calculate the speed
+float calcSpeed(int first,int last){
+    if(first==last) 
+       return 0;
+    else
+       return (DISTANCE/5280.0)/((last-first)/3600000.0);
+}
+
 //Read the speed in MPH.
 void readspeed(float speed)
 {
+  speakJetWait();
   char speedstring[100];
   int speedstep=1;
   int i=0;
@@ -210,15 +212,51 @@ void readspeed(float speed)
   // start at the last character, and 
   // work our way to the begining.
   for(i=strlen(speedstring);i>=0;i--){
-     while(digitalRead(SPK)!=LOW);
+     speakJetWait();
      speakdigit(speedstring[i]);    
   }
 }
 
 // Defect Alarm
-void defect_alarm()
-{
+void defect_alarm(){
+  speakJetWait();
   speakjet.print(alarm_string);
-  while(digitalRead(SPK)!=LOW);
+  speakJetWait();
   speakjet.print(alarm_string);
+}
+
+
+/* detector routines */
+void initDetector(detector *d,int pin1,int pin2){
+  int i;
+  for(i=0;i<strlen(MILEPOST);i++){
+    (*d).milepost[i]=MILEPOST[i];
+  }
+  (*d).milepost[i]='\0';
+  (*d).speed = 0;
+  (*d).triggerPin1=pin1;
+  (*d).triggerPin2=pin2;
+  (*d).speedtrigger=(*d).triggerPin2;
+  (*d).firstTime=0;
+
+  pinMode((*d).triggerPin1,INPUT);
+  pinMode((*d).triggerPin2,INPUT);
+
+}
+
+int detectorActive(detector d){
+  return (digitalRead(d.triggerPin1)==DETECTORACTIVE
+        || digitalRead(d.triggerPin2)==DETECTORACTIVE);
+}
+
+void resetDetectorState(detector *d){
+  if(digitalRead((*d).triggerPin1)==DETECTORACTIVE){
+     (*d).speedtrigger=(*d).triggerPin2;  
+  } else  {
+     (*d).speedtrigger=(*d).triggerPin1;
+  }
+  (*d).firstTime=millis();
+  randomSeed((*d).firstTime);
+  (*d).defect=random(100);
+  (*d).speed = 0;
 }
