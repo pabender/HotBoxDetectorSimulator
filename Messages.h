@@ -37,6 +37,14 @@ char speed_string[]={ 20, 96, /* volume setting */
                187,198,128,128,176,
              '\0'};
 
+           // "Track"
+char track_string[]={ 20, 96, /* volume setting */
+               21, 114,/* speed  setting */
+               22, 88, /* pitch setting */ 
+               23, 5, /* bend setting */
+               191,148,132,195,
+             '\0'};
+
 char alarm_string[]={ 20, 96, /* volume setting */
                21, 114,/* speed  setting */
                22, 88, /* pitch setting */ 

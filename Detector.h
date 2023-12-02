@@ -30,6 +30,8 @@ int DEFECTPERCENT=10;
 // Sensor Inputs for defect detector.
 #define TRIGGER1PIN 6
 #define TRIGGER2PIN 7
+#define TRIGGER3PIN 8
+#define TRIGGER4PIN 9
 
 typedef struct __detector {
   char milepost[10];

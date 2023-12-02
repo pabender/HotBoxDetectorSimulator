@@ -28,6 +28,8 @@ the SPK+ and - pins on the shield.
 SoftwareSerial speakjet = SoftwareSerial(0, txPin);
 
 detector track1Detector;
+detector track2Detector;
+
   
 void setup()  
 {
@@ -44,30 +46,22 @@ void setup()
   //Configure Reset line as an output
   pinMode(RES, OUTPUT);
 
-  initDetector(&track1Detector,TRIGGER1PIN,TRIGGER2PIN);     
+  initDetector(&track1Detector,1,TRIGGER1PIN,TRIGGER2PIN);     
+  initDetector(&track2Detector,2,TRIGGER3PIN,TRIGGER4PIN);     
   speakJetReset();
 }
 
 void loop() { 
 
-  while(!detectorActive(track1Detector)); // while both triggers are inactive, wait
+  while(!detectorActive(track1Detector) && !detectorActive(track2Detector)); // while both triggers are inactive, wait
 
-  resetDetectorState(&track1Detector);
-   
-  readWelcome();
- 
+  if(detectorActive(track1Detector)) { // the detector on track 1 is active
 
-  //Wait before sending the next string.
-  while(digitalRead(SPK)!=LOW){
-    if(digitalRead(track1Detector.speedtrigger)== DETECTORACTIVE && track1Detector.speed==0){
-            track1Detector.speed = calcSpeed(track1Detector.firstTime,millis());
-    }
-  }
-  
-  readMilepost(track1Detector.milepost);
-  
-  // Now wait until the detector input changes
-  while(detectorActive(track1Detector)){
+     resetDetectorState(&track1Detector);
+     startDetector(&track1Detector); 
+
+     // Now wait until the detector input changes
+     while(detectorActive(track1Detector)){
           if(digitalRead(track1Detector.speedtrigger)==DETECTORACTIVE && track1Detector.speed==0){
             track1Detector.speed=calcSpeed(track1Detector.firstTime,millis());
           }
@@ -78,25 +72,46 @@ void loop() {
              if(random(100)<=DEFECTPERCENT) break;
           }
           
-        } // while either trigger is HIGH, wait
+     } // while either trigger is HIGH, wait
         
-  if(track1Detector.defect<=(DEFECTPERCENT)){
-    defect_alarm();
-    // after triggering the defect alarm, wait until the
-    // trigger pins are both low again before continuing.
-    while(detectorActive(track1Detector));
-  } else {
-    //Send "Hotbox detector, milepost" to the SpeakJet module
-    readWelcome();
-    readMilepost(track1Detector.milepost);
-  
-    if(track1Detector.speed!=0){
-      readspeed(track1Detector.speed);
-    }
-
-    readNoDefects();
-    readDetectorOut();
+     if(track1Detector.defect<=(DEFECTPERCENT)){
+       defect_alarm();
+       // after triggering the defect alarm, wait until the
+       // trigger pins are both low again before continuing.
+       while(detectorActive(track1Detector));
+     } else {
+       closing(track1Detector);
+     }
   }
+  if(detectorActive(track2Detector)) { // the detector on track 2 is active
+
+     resetDetectorState(&track2Detector);
+     startDetector(&track2Detector); 
+
+     // Now wait until the detector input changes
+     while(detectorActive(track2Detector)){
+          if(digitalRead(track2Detector.speedtrigger)==DETECTORACTIVE && track2Detector.speed==0){
+            track2Detector.speed=calcSpeed(track2Detector.firstTime,millis());
+          }
+          if(track2Detector.defect<=DEFECTPERCENT) {
+             // we have already determined if we have a deffect, now 
+             // we need to decide if this is where we want to trigger
+             // the alarm.
+             if(random(100)<=DEFECTPERCENT) break;
+          }
+          
+     } // while either trigger is HIGH, wait
+        
+     if(track2Detector.defect<=(DEFECTPERCENT)){
+       defect_alarm();
+       // after triggering the defect alarm, wait until the
+       // trigger pins are both low again before continuing.
+       while(detectorActive(track2Detector));
+     } else {
+       closing(track2Detector);
+     }
+  }
+
 }
 
 /* Speak Jet routines */
@@ -127,6 +142,19 @@ void readMilepost(char milepost[])
   }
 }
 
+// read the mile post number, one digit at a time.
+void readTrack(char track[])
+{
+  speakJetWait();
+  speakjet.print(track_string);
+  speakJetWait();
+  int i;
+  for(i=0;i<strlen(track);i++){
+     speakdigit(track[i]);    
+  }
+}
+
+
 void readNoDefects(){
     speakJetWait();
     speakjet.print(no_defects);
@@ -136,8 +164,6 @@ void readDetectorOut(){
     speakJetWait();
     speakjet.print(detector_out);
 }
-
-
 
 // read a single digit
 void speakdigit(char digit)
@@ -227,12 +253,14 @@ void defect_alarm(){
 
 
 /* detector routines */
-void initDetector(detector *d,int pin1,int pin2){
+void initDetector(detector *d,int track,int pin1,int pin2){
   int i;
   for(i=0;i<strlen(MILEPOST);i++){
     (*d).milepost[i]=MILEPOST[i];
   }
   (*d).milepost[i]='\0';
+  (*d).track[0]='0'+track;
+  (*d).track[1]='\0';
   (*d).speed = 0;
   (*d).triggerPin1=pin1;
   (*d).triggerPin2=pin2;
@@ -242,6 +270,38 @@ void initDetector(detector *d,int pin1,int pin2){
   pinMode((*d).triggerPin1,INPUT);
   pinMode((*d).triggerPin2,INPUT);
 
+}
+
+void startDetector(detector *d){
+    readWelcome();
+ 
+
+  //Wait before sending the next string.
+  while(digitalRead(SPK)!=LOW){
+    if(digitalRead((*d).speedtrigger)== DETECTORACTIVE && (*d).speed==0){
+            (*d).speed = calcSpeed((*d).firstTime,millis());
+    }
+  }
+  
+  readMilepost((*d).milepost);
+
+  readTrack((*d).track);
+}
+
+void closing(detector d){
+
+    //Send "Hotbox detector, milepost" to the SpeakJet module
+    readWelcome();
+    readMilepost(d.milepost);
+
+    readTrack(d.track);  
+
+    if(d.speed!=0){
+      readspeed(d.speed);
+    }
+
+    readNoDefects();
+    readDetectorOut();
 }
 
 int detectorActive(detector d){
