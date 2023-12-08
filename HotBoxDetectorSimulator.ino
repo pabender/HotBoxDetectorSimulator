@@ -30,6 +30,8 @@ SoftwareSerial speakjet = SoftwareSerial(0, txPin);
 detector track1Detector;
 detector track2Detector;
 
+#define debounceDelay 250
+
   
 void setup()  
 {
@@ -53,15 +55,15 @@ void setup()
 
 void loop() { 
 
-  while(!detectorActive(track1Detector) && !detectorActive(track2Detector)); // while both triggers are inactive, wait
+  while(!detectorActive(&track1Detector) && !detectorActive(&track2Detector)); // while both triggers are inactive, wait
 
-  if(detectorActive(track1Detector)) { // the detector on track 1 is active
+  if(detectorActive(&track1Detector)) { // the detector on track 1 is active
 
      resetDetectorState(&track1Detector);
      startDetector(&track1Detector); 
 
      // Now wait until the detector input changes
-     while(detectorActive(track1Detector)){
+     while(detectorActive(&track1Detector)){
           if(digitalRead(track1Detector.speedtrigger)==DETECTORACTIVE && track1Detector.speed==0){
             track1Detector.speed=calcSpeed(track1Detector.firstTime,millis());
           }
@@ -78,18 +80,18 @@ void loop() {
        defect_alarm();
        // after triggering the defect alarm, wait until the
        // trigger pins are both low again before continuing.
-       while(detectorActive(track1Detector));
+       while(detectorActive(&track1Detector));
      } else {
        closing(track1Detector);
      }
   }
-  if(detectorActive(track2Detector)) { // the detector on track 2 is active
+  if(detectorActive(&track2Detector)) { // the detector on track 2 is active
 
      resetDetectorState(&track2Detector);
      startDetector(&track2Detector); 
 
      // Now wait until the detector input changes
-     while(detectorActive(track2Detector)){
+     while(detectorActive(&track2Detector)){
           if(digitalRead(track2Detector.speedtrigger)==DETECTORACTIVE && track2Detector.speed==0){
             track2Detector.speed=calcSpeed(track2Detector.firstTime,millis());
           }
@@ -106,7 +108,7 @@ void loop() {
        defect_alarm();
        // after triggering the defect alarm, wait until the
        // trigger pins are both low again before continuing.
-       while(detectorActive(track2Detector));
+       while(detectorActive(&track2Detector));
      } else {
        closing(track2Detector);
      }
@@ -266,6 +268,9 @@ void initDetector(detector *d,int track,int pin1,int pin2){
   (*d).triggerPin2=pin2;
   (*d).speedtrigger=(*d).triggerPin2;
   (*d).firstTime=0;
+  (*d).activeState=DETECTORINACTIVE;
+  (*d).debounceState=DETECTORINACTIVE;
+  (*d).lastDebounceTime=millis();
 
   pinMode((*d).triggerPin1,INPUT);
   pinMode((*d).triggerPin2,INPUT);
@@ -304,9 +309,20 @@ void closing(detector d){
     readDetectorOut();
 }
 
-int detectorActive(detector d){
-  return (digitalRead(d.triggerPin1)==DETECTORACTIVE
-        || digitalRead(d.triggerPin2)==DETECTORACTIVE);
+int detectorActive(detector *d){
+  
+  int state = (digitalRead((*d).triggerPin1)==DETECTORACTIVE
+        || digitalRead((*d).triggerPin2)==DETECTORACTIVE);
+
+  if((*d).debounceState != state ){
+    (*d).lastDebounceTime = millis();
+    (*d).debounceState = state;
+  }
+        
+  if(millis()-(*d).lastDebounceTime > debounceDelay){
+     (*d).activeState=(*d).debounceState;      
+  }
+  return ((*d).activeState);
 }
 
 void resetDetectorState(detector *d){
