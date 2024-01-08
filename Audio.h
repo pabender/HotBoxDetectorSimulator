@@ -7,6 +7,8 @@ void readWelcome();
 void readMilepost(char []);
 void readNoDefects();
 void readDetectorOut();
+// Read the track
+void readTrack(int track);
 // read a single digit
 void speakdigit(char digit);
 //Calculate the speed

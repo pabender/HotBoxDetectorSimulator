@@ -6,7 +6,7 @@ char MILEPOST[]="36.2";
 int DISTANCE = 80;
 
 // Percent of trains that should trigger a defect.
-int DEFECTPERCENT=10;
+int DEFECTPERCENT=2;
 
 //Define the Pin Numbers used in the sketch.
 
@@ -30,6 +30,8 @@ int DEFECTPERCENT=10;
 // Sensor Inputs for defect detector.
 #define TRIGGER1PIN 6
 #define TRIGGER2PIN 7
+#define TRIGGER3PIN 8
+#define TRIGGER4PIN 9
 
 typedef struct __detector {
   char milepost[10];
@@ -41,6 +43,9 @@ typedef struct __detector {
   int speedtrigger;
   int firstTime;
   int defect;
+  int activeState;
+  int debounceState;
+  int lastDebounceTime;
 } detector;
 
 void initDetector(detector *d,int pin1,int pin2);
