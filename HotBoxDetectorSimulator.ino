@@ -24,11 +24,16 @@ the SPK+ and - pins on the shield.
 #include "Messages.h"
 #include "Numbers.h"
 
+// define the DOUBLETRACK constant if two tracks are in use.
+#define DOUBLETRACK 1
+
 //Create a SoftSerial Objet
 SoftwareSerial speakjet = SoftwareSerial(0, txPin);
 
 detector track1Detector;
+#ifdef DOUBLETRACK 
 detector track2Detector;
+#endif
 
 #define debounceDelay 250
 
@@ -48,14 +53,20 @@ void setup()
   //Configure Reset line as an output
   pinMode(RES, OUTPUT);
 
-  initDetector(&track1Detector,1,TRIGGER1PIN,TRIGGER2PIN);     
-  initDetector(&track2Detector,2,TRIGGER3PIN,TRIGGER4PIN);     
+  initDetector(&track1Detector,1,TRIGGER1PIN,TRIGGER2PIN);
+#ifdef DOUBLETRACK  
+  initDetector(&track2Detector,2,TRIGGER3PIN,TRIGGER4PIN);
+#endif  
   speakJetReset();
 }
 
 void loop() { 
 
-  while(!detectorActive(&track1Detector) && !detectorActive(&track2Detector)); // while both triggers are inactive, wait
+  while(!detectorActive(&track1Detector) 
+#ifdef DOUBLETRACK
+        && !detectorActive(&track2Detector)
+#endif
+        ); // while both triggers are inactive, wait
 
   if(detectorActive(&track1Detector)) { // the detector on track 1 is active
 
@@ -85,6 +96,8 @@ void loop() {
        closing(track1Detector);
      }
   }
+  
+#ifdef DOUBLETRACK  
   if(detectorActive(&track2Detector)) { // the detector on track 2 is active
 
      resetDetectorState(&track2Detector);
@@ -113,6 +126,7 @@ void loop() {
        closing(track2Detector);
      }
   }
+#endif
 
 }
 
@@ -289,8 +303,9 @@ void startDetector(detector *d){
   }
   
   readMilepost((*d).milepost);
-
+#ifdef DOUBLETRACK
   readTrack((*d).track);
+#endif  
 }
 
 void closing(detector d){
@@ -298,8 +313,9 @@ void closing(detector d){
     //Send "Hotbox detector, milepost" to the SpeakJet module
     readWelcome();
     readMilepost(d.milepost);
-
-    readTrack(d.track);  
+#ifdef DOUBLETRACK
+    readTrack(d.track);
+#endif  
 
     if(d.speed!=0){
       readspeed(d.speed);
