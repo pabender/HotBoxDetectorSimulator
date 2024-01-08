@@ -25,7 +25,7 @@ the SPK+ and - pins on the shield.
 #include "Numbers.h"
 
 // define the DOUBLETRACK constant if two tracks are in use.
-#define DOUBLETRACK 1
+//#define DOUBLETRACK 1
 
 //Create a SoftSerial Objet
 SoftwareSerial speakjet = SoftwareSerial(0, txPin);
