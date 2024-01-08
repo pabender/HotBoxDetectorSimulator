@@ -3,7 +3,7 @@ char MILEPOST[]="36.2";
 
 // The distance between the first input and 
 // the second input (in scale feet)
-int DISTANCE = 80;
+int DISTANCE = 40;
 
 // Percent of trains that should trigger a defect.
 int DEFECTPERCENT=2;
