@@ -28,6 +28,15 @@ char detector_out[] = { 20, 96, /* volume setting */
                    8,174,8,128,8,191,8,131,8,194,8,191,153,4, /* DETECTOR */
                    163,191,4, /*0ut*/
                    '\0'};
+
+// "Integrety Failure"                   
+char integrety_failure[] = { 20, 96, /* volume setting */
+                   21, 114,/* speed  setting */
+                   22, 88, /* pitch setting */ 
+                   23, 5, /* bend setting */
+                   8, 128, 8, 141, 6, 192, 128, 128,1 ,148, 191,4, /* Integrety */
+                   8, 131, 186, 6.128. 146, 1, 8, 160, 153,4, /* Failure */
+                   '\0'};
            
            // "Speed"
 char speed_string[]={ 20, 96, /* volume setting */

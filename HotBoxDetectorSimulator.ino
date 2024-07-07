@@ -181,6 +181,11 @@ void readDetectorOut(){
     speakjet.print(detector_out);
 }
 
+void readIntegretyFailure(){
+    speakJetWait();
+    speakjet.print(integrety_failure);
+}
+
 // read a single digit
 void speakdigit(char digit)
 {
