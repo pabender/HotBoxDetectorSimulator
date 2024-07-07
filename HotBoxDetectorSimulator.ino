@@ -52,12 +52,19 @@ void setup()
   
   //Configure Reset line as an output
   pinMode(RES, OUTPUT);
+  speakJetReset();
 
   initDetector(&track1Detector,1,TRIGGER1PIN,TRIGGER2PIN);
 #ifdef DOUBLETRACK  
   initDetector(&track2Detector,2,TRIGGER3PIN,TRIGGER4PIN);
 #endif  
-  speakJetReset();
+  offline(track1Detector);
+  while(detectorActive(&track1Detector) 
+#ifdef DOUBLETRACK
+        || detectorActive(&track2Detector)
+#endif
+        ); // while any trigger is active, wait
+
 }
 
 void loop() { 
@@ -179,6 +186,11 @@ void readNoDefects(){
 void readDetectorOut(){
     speakJetWait();
     speakjet.print(detector_out);
+}
+
+void readIntegretyFailure(){
+    speakJetWait();
+    speakjet.print(integrety_failure);
 }
 
 // read a single digit
@@ -324,6 +336,16 @@ void closing(detector d){
     readNoDefects();
     readDetectorOut();
 }
+
+void offline(detector d){
+
+    //Send "Hotbox detector, milepost" to the SpeakJet module
+    readWelcome();
+    readMilepost(d.milepost);
+    readIntegretyFailure();
+    readDetectorOut();
+}
+
 
 int detectorActive(detector *d){
   

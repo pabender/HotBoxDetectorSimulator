@@ -7,6 +7,7 @@ void readWelcome();
 void readMilepost(char []);
 void readNoDefects();
 void readDetectorOut();
+void readIntegretyFailure();
 // Read the track
 void readTrack(int track);
 // read a single digit
