@@ -1,3 +1,6 @@
+#ifndef __Audio_h
+#define __Audio_h
+
 /* Speak Jet routines */
 void speakJetReset();
 void speakJetWait();
@@ -12,9 +15,10 @@ void readIntegretyFailure();
 void readTrack(int track);
 // read a single digit
 void speakdigit(char digit);
-//Calculate the speed
-float calcSpeed(int first,int last);
+
 //Read the speed in MPH.
 void readspeed(float speed);
 // Defect Alarm
 void defect_alarm();
+
+#endif
