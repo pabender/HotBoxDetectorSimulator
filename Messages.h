@@ -1,7 +1,7 @@
 // some constants for controlling the speakjet
 
 #define VOLUME 96
-#define SPEED_SETTING 112
+#define SPEED_SETTING 113
 #define PITCH_SETTING 88
 #define BEND_SETTING 5
 
@@ -12,12 +12,6 @@ char welcome[] = { 20, VOLUME, /* volume setting */
                    21,SPEED_SETTING,/* speed  setting */
                    22,PITCH_SETTING, /* pitch setting */ 
                    23,BEND_SETTING, /* bend setting */
-                   183,136,191,4, /*HOT*/
-                   171,7,135,14,194,7,187,4, /*BOX*/
-char welcome[] = { 20, 96, /* volume setting */
-                   21, 114,/* speed  setting */
-                   22, 88, /* pitch setting */ 
-                   23, 5, /* bend setting */
                    //183,136,191,4, /*HOT*/
                    //171,7,135,14,194,7,187,4, /*BOX*/
                    8, 170, 8, 128, 1, 8, 129, 8, 141, 4,  /* B N */

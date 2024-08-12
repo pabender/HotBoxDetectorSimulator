@@ -35,7 +35,7 @@ detector track1Detector;
 detector track2Detector;
 #endif
 
-#define debounceDelay 250
+#define debounceDelay 2000
 
   
 void setup()  
