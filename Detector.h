@@ -1,3 +1,5 @@
+#ifndef __Detector_h
+#define __Detector_h
 // Enter the milepost for the detector below
 char MILEPOST[]="36.2";
 
@@ -14,6 +16,9 @@ int DEFECTPERCENT=2;
 
 #define DETECTORACTIVE LOW
 #define DETECTORINACTIVE HIGH
+
+#define debounceDelay 250
+
 
 // Ready
 #define RDY  13
@@ -48,6 +53,11 @@ typedef struct __detector {
   int lastDebounceTime;
 } detector;
 
-void initDetector(detector *d,int pin1,int pin2);
+void initDetector(detector *d,int track, int pin1,int pin2);
+void startDetector(detector *d);
 int detectorActive(detector *d);
-void resetDetectorState(detector d);
+void resetDetectorState(detector *d);
+void offline(detector d);
+void closing(detector d);
+
+#endif
